@@ -297,6 +297,7 @@ void IV_HANDLE_INIT(struct iv_handle *_h)
 {
 	struct iv_handle_ *h = (struct iv_handle_ *)_h;
 
+	h->registered = 0;
 	h->u.mp.grp = NULL;
 	h->u.mp.index = -1;
 	INIT_IV_LIST_HEAD(&h->list_active);
@@ -434,6 +435,12 @@ void iv_handle_register(struct iv_handle *_h)
 	struct iv_handle_ *h = (struct iv_handle_ *)_h;
 	struct iv_state *st = iv_get_state();
 
+	if (h->registered) {
+		iv_fatal("iv_handle_register: called with handle "
+			 "which is already registered");
+	}
+	h->registered = 1;
+
 	if (h->handler != NULL)
 		__iv_handle_register(st, h, 1);
 
@@ -446,6 +453,12 @@ void iv_handle_unregister(struct iv_handle *_h)
 	struct iv_handle_group *grp = h->u.mp.grp;
 	struct iv_state *st = grp->u.mp.st;
 
+	if (!h->registered) {
+		iv_fatal("iv_handle_unregister: called with handle "
+			 "which is not registered");
+	}
+	h->registered = 0;
+
 	if (h->handler != NULL)
 		__iv_handle_unregister(h, 1);
 
@@ -455,10 +468,22 @@ void iv_handle_unregister(struct iv_handle *_h)
 	st->numobjs--;
 }
 
+int iv_handle_registered(struct iv_handle *_h)
+{
+	struct iv_handle_ *h = (struct iv_handle_ *)_h;
+
+	return h->registered;
+}
+
 void iv_handle_set_handler(struct iv_handle *_h, void (*handler)(void *))
 {
 	struct iv_handle_ *h = (struct iv_handle_ *)_h;
 	struct iv_state *st = iv_get_state();
+
+	if (!h->registered) {
+		iv_fatal("iv_handle_set_handler: called with handle "
+			 "which is not registered");
+	}
 
 	if (h->handler == NULL && handler != NULL)
 		__iv_handle_register(st, h, 1);
@@ -473,6 +498,12 @@ void iv_handle_register(struct iv_handle *_h)
 	struct iv_handle_ *h = (struct iv_handle_ *)_h;
 	struct iv_state *st = iv_get_state();
 
+	if (h->registered) {
+		iv_fatal("iv_handle_register: called with handle "
+			 "which is already registered");
+	}
+	h->registered = 1;
+
 	if (h->handler != NULL)
 		__iv_handle_register(st, h, 0);
 
@@ -485,6 +516,12 @@ void iv_handle_unregister(struct iv_handle *_h)
 	struct iv_handle_group *grp = h->u.mp.grp;
 	struct iv_state *st = grp->u.mp.st;
 
+	if (!h->registered) {
+		iv_fatal("iv_handle_unregister: called with handle "
+			 "which is not registered");
+	}
+	h->registered = 0;
+
 	if (h->handler != NULL)
 		__iv_handle_unregister(h, 0);
 
@@ -494,10 +531,22 @@ void iv_handle_unregister(struct iv_handle *_h)
 	st->numobjs--;
 }
 
+int iv_handle_registered(struct iv_handle *_h)
+{
+	struct iv_handle_ *h = (struct iv_handle_ *)_h;
+
+	return h->registered;
+}
+
 void iv_handle_set_handler(struct iv_handle *_h, void (*handler)(void *))
 {
 	struct iv_handle_ *h = (struct iv_handle_ *)_h;
 	struct iv_state *st = iv_get_state();
+
+	if (!h->registered) {
+		iv_fatal("iv_handle_set_handler: called with handle "
+			 "which is not registered");
+	}
 
 	if (h->handler == NULL && handler != NULL)
 		__iv_handle_register(st, h, 0);
