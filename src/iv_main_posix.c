@@ -85,13 +85,17 @@ void iv_quit(void)
 void iv_main(void)
 {
 	struct iv_state *st = iv_get_state();
+	int run_timers;
 
 	st->quit = 0;
+
+	run_timers = 1;
 	while (1) {
 		struct timespec _abs;
 		const struct timespec *abs;
 
-		iv_run_timers(st);
+		if (run_timers)
+			iv_run_timers(st);
 		iv_run_tasks(st);
 
 		if (st->quit || !st->numobjs)
@@ -105,7 +109,7 @@ void iv_main(void)
 			abs = iv_get_soonest_timeout(st);
 		}
 
-		iv_fd_poll_and_run(st, abs);
+		run_timers = iv_fd_poll_and_run(st, abs);
 	}
 }
 
