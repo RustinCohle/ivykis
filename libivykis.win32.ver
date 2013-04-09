@@ -5,6 +5,7 @@ global:
 	iv_avl_tree_delete;
 	iv_avl_tree_next;
 	iv_avl_tree_prev;
+	iv_avl_tree_index;
 
 	# iv_event
 	iv_event_register;

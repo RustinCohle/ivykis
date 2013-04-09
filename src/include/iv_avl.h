@@ -55,6 +55,7 @@ int iv_avl_tree_insert(struct iv_avl_tree *tree, struct iv_avl_node *an);
 void iv_avl_tree_delete(struct iv_avl_tree *tree, struct iv_avl_node *an);
 struct iv_avl_node *iv_avl_tree_next(struct iv_avl_node *an);
 struct iv_avl_node *iv_avl_tree_prev(struct iv_avl_node *an);
+struct iv_avl_node *iv_avl_tree_index(struct iv_avl_tree *tree, uint32_t index);
 
 static inline int iv_avl_tree_empty(const struct iv_avl_tree *tree)
 {

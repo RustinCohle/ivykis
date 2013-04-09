@@ -463,3 +463,26 @@ struct iv_avl_node *iv_avl_tree_prev(struct iv_avl_node *an)
 
 	return p;
 }
+
+struct iv_avl_node *iv_avl_tree_index(struct iv_avl_tree *tree, uint32_t index)
+{
+	struct iv_avl_node *p;
+
+	p = tree->root;
+	while (p != NULL) {
+		int nl;
+
+		nl = nodes(p->left);
+		if (index == nl)
+			break;
+
+		if (index < nl) {
+			p = p->left;
+		} else {
+			index -= nl + 1;
+			p = p->right;
+		}
+	}
+
+	return p;
+}

@@ -134,6 +134,8 @@ tree_node_verify(const struct iv_avl_tree *this, const struct iv_avl_node *an,
 static void tree_check(const struct iv_avl_tree *this, int expected_count)
 {
 	int count;
+	struct iv_avl_node *an;
+	int i;
 
 	count = 0;
 	if (this->root != NULL)
@@ -141,10 +143,22 @@ static void tree_check(const struct iv_avl_tree *this, int expected_count)
 
 	if (expected_count >= 0 && expected_count != count)
 		fatal("count mismatch: %d versus %d", count, expected_count);
+
+	an = iv_avl_tree_min(&x);
+	for (i = 0; i <= count; i++) {
+		struct iv_avl_node *an2;
+
+		an2 = iv_avl_tree_index(&x, i);
+		if (an != an2)
+			fatal("node mismatch: %d, %p vs %p", i, an, an2);
+
+		if (an != NULL)
+			an = iv_avl_tree_next(an);
+	}
 }
 
 
-#define NUM	16384
+#define NUM	8192
 
 static struct node *f[NUM];
 
