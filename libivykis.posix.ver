@@ -107,4 +107,5 @@ IVYKIS_0.33 {
 IVYKIS_0.40 {
 	# iv_avl
 	iv_avl_tree_index;
+	iv_avl_node_index;
 } IVYKIS_0.33;

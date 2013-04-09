@@ -486,3 +486,21 @@ struct iv_avl_node *iv_avl_tree_index(struct iv_avl_tree *tree, uint32_t index)
 
 	return p;
 }
+
+uint32_t iv_avl_node_index(struct iv_avl_node *an)
+{
+	uint32_t index;
+
+	index = nodes(an->left);
+	while (an->parent != NULL) {
+		struct iv_avl_node *parent;
+
+		parent = an->parent;
+		if (parent->right == an)
+			index += nodes(parent->left) + 1;
+
+		an = parent;
+	}
+
+	return index;
+}

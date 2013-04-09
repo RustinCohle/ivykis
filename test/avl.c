@@ -152,13 +152,20 @@ static void tree_check(const struct iv_avl_tree *this, int expected_count)
 		if (an != an2)
 			fatal("node mismatch: %d, %p vs %p", i, an, an2);
 
-		if (an != NULL)
+		if (an != NULL) {
+			uint32_t i2;
+
+			i2 = iv_avl_node_index(an);
+			if (i2 != i)
+				fatal("index mismatch: %d vs %d", i, i2);
+
 			an = iv_avl_tree_next(an);
+		}
 	}
 }
 
 
-#define NUM	8192
+#define NUM	6144
 
 static struct node *f[NUM];
 
