@@ -31,6 +31,7 @@ struct iv_avl_node {
 	struct iv_avl_node	*left;
 	struct iv_avl_node	*right;
 	struct iv_avl_node	*parent;
+	uint32_t		nodes;
 	uint8_t			height;
 };
 

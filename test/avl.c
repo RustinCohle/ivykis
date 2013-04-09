@@ -40,8 +40,8 @@ static void tree_node_print(int depth, const struct iv_avl_node *an)
 
 	for (i = 0; i < depth; i++)
 		fprintf(stderr, "  ");
-	fprintf(stderr, "%p (parent=%p): %d (height %d)\n",
-		an, an->parent, f->num, f->an.height);
+	fprintf(stderr, "%p (parent=%p): %d (nodes %d, height %d)\n",
+		an, an->parent, f->num, f->an.nodes, f->an.height);
 
 	if (an->left != NULL)
 		tree_node_print(depth + 1, an->left);
@@ -79,6 +79,7 @@ tree_node_verify(const struct iv_avl_tree *this, const struct iv_avl_node *an,
 		 const struct iv_avl_node *min, const struct iv_avl_node *max,
 		 int *cnt)
 {
+	int nodes;
 	int hl;
 	int hr;
 	int my;
@@ -103,13 +104,22 @@ tree_node_verify(const struct iv_avl_tree *this, const struct iv_avl_node *an,
 			fatal("violated %p < %p < %p", min, an, max);
 	}
 
+	nodes = 1;
+
 	hl = 0;
-	if (an->left != NULL)
+	if (an->left != NULL) {
+		nodes += an->left->nodes;
 		hl = tree_node_verify(this, an->left, an, min, an, cnt);
+	}
 
 	hr = 0;
-	if (an->right != NULL)
+	if (an->right != NULL) {
+		nodes += an->right->nodes;
 		hr = tree_node_verify(this, an->right, an, an, max, cnt);
+	}
+
+	if (an->nodes != nodes)
+		fatal("nodes mismatch: %d vs %d", an->nodes, nodes);
 
 	if (abs(hl - hr) > 1)
 		fatal("balance mismatch: %d vs %d", hl, hr);

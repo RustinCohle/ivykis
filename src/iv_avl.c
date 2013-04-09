@@ -22,15 +22,22 @@
 #include <iv.h>
 #include "iv_avl.h"
 
+static int nodes(const struct iv_avl_node *an)
+{
+	return an != NULL ? an->nodes : 0;
+}
+
 static int height(const struct iv_avl_node *an)
 {
 	return an != NULL ? an->height : 0;
 }
 
-static void recalc_height(struct iv_avl_node *an)
+static void recalc_params(struct iv_avl_node *an)
 {
 	int hl;
 	int hr;
+
+	an->nodes = 1 + nodes(an->left) + nodes(an->right);
 
 	hl = height(an->left);
 	hr = height(an->right);
@@ -99,12 +106,12 @@ static void rotate_left(struct iv_avl_node **root)
 	b->right = c;
 	if (c != NULL)
 		c->parent = b;
-	recalc_height(b);
+	recalc_params(b);
 
 	d->left = b;
 	d->parent = b->parent;
 	b->parent = d;
-	recalc_height(d);
+	recalc_params(d);
 
 	*root = d;
 }
@@ -119,12 +126,12 @@ static void rotate_right(struct iv_avl_node **root)
 	d->left = c;
 	if (c != NULL)
 		c->parent = d;
-	recalc_height(d);
+	recalc_params(d);
 
 	b->right = d;
 	b->parent = d->parent;
 	d->parent = b;
-	recalc_height(b);
+	recalc_params(b);
 
 	*root = b;
 }
@@ -141,20 +148,20 @@ static void rotate_left_right(struct iv_avl_node **root)
 	b->right = c;
 	if (c != NULL)
 		c->parent = b;
-	recalc_height(b);
+	recalc_params(b);
 
 	e = d->right;
 	f->left = e;
 	if (e != NULL)
 		e->parent = f;
-	recalc_height(f);
+	recalc_params(f);
 
 	d->left = b;
 	d->right = f;
 	d->parent = f->parent;
 	b->parent = d;
 	f->parent = d;
-	recalc_height(d);
+	recalc_params(d);
 
 	*root = d;
 }
@@ -171,20 +178,20 @@ static void rotate_right_left(struct iv_avl_node **root)
 	b->right = c;
 	if (c != NULL)
 		c->parent = b;
-	recalc_height(b);
+	recalc_params(b);
 
 	e = d->right;
 	f->left = e;
 	if (e != NULL)
 		e->parent = f;
-	recalc_height(f);
+	recalc_params(f);
 
 	d->left = b;
 	d->right = f;
 	d->parent = b->parent;
 	b->parent = d;
 	f->parent = d;
-	recalc_height(d);
+	recalc_params(d);
 
 	*root = d;
 }
@@ -249,7 +256,7 @@ static void rebalance_path(struct iv_avl_tree *tree, struct iv_avl_node *an)
 		struct iv_avl_node **ref;
 
 		old_height = an->height;
-		recalc_height(an);
+		recalc_params(an);
 
 		ref = find_reference(tree, an);
 		rebalance_node(ref);
@@ -266,6 +273,7 @@ int iv_avl_tree_insert(struct iv_avl_tree *tree, struct iv_avl_node *an)
 {
 	struct iv_avl_node *p;
 	struct iv_avl_node **pp;
+	struct iv_avl_node *q;
 
 	/*
 	 * Find the node to which an is to be attached as a leaf.
@@ -292,8 +300,18 @@ int iv_avl_tree_insert(struct iv_avl_tree *tree, struct iv_avl_node *an)
 	an->left = NULL;
 	an->right = NULL;
 	an->parent = p;
+	an->nodes = 1;
 	an->height = 1;
 	*pp = an;
+
+	/*
+	 * Update node counts.
+	 */
+	q = p;
+	while (q != NULL) {
+		q->nodes++;
+		q = q->parent;
+	}
 
 	/*
 	 * Start rebalancing from an's parent.
@@ -372,6 +390,7 @@ iv_avl_tree_delete_nonleaf(struct iv_avl_tree *tree, struct iv_avl_node *an)
 	victim->left = an->left;
 	victim->right = an->right;
 	victim->parent = an->parent;
+	victim->nodes = an->nodes;
 	victim->height = an->height;
 	if (victim->left != NULL)
 		victim->left->parent = victim;
@@ -384,11 +403,21 @@ iv_avl_tree_delete_nonleaf(struct iv_avl_tree *tree, struct iv_avl_node *an)
 void iv_avl_tree_delete(struct iv_avl_tree *tree, struct iv_avl_node *an)
 {
 	struct iv_avl_node *p;
+	struct iv_avl_node *q;
 
 	if (an->left == NULL && an->right == NULL)
 		p = iv_avl_tree_delete_leaf(tree, an);
 	else
 		p = iv_avl_tree_delete_nonleaf(tree, an);
+
+	/*
+	 * Update node counts.
+	 */
+	q = p;
+	while (q != NULL) {
+		q->nodes--;
+		q = q->parent;
+	}
 
 	rebalance_path(tree, p);
 }
