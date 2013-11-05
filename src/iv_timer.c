@@ -50,6 +50,18 @@ const struct timespec *__iv_now_location(void)
 	return &st->time;
 }
 
+const struct timespec *__iv_now_location_valid(void)
+{
+	struct iv_state *st = iv_get_state();
+
+	if (!st->time_valid) {
+		st->time_valid = 1;
+		iv_time_get(&st->time);
+	}
+
+	return &st->time;
+}
+
 
 /* internal use *************************************************************/
 void iv_timer_init(struct iv_state *st)
